@@ -1,0 +1,6 @@
+diff --git a/etc/init.d/tr3600-fan b/etc/init.d/tr3600-fan
+old mode 100644
+new mode 100755
+diff --git a/usr/sbin/tr3600-fan b/usr/sbin/tr3600-fan
+old mode 100644
+new mode 100755

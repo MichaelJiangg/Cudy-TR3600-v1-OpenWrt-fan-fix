@@ -1,0 +1,19 @@
+# Firmware release assets
+*.bin
+*.zip
+*.sha256
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# System and editor files
+.DS_Store
+._*
+.idea/
+.vscode/
+
+# Local AI tool state
+.codex/
+.claude/

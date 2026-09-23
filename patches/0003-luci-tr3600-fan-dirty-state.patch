@@ -1,0 +1,100 @@
+--- a/htdocs/luci-static/resources/view/tr3600-fan.js
++++ b/htdocs/luci-static/resources/view/tr3600-fan.js
+@@ -36,6 +36,10 @@
+ 
+ 	render: function(initial) {
+ 		const self = this;
++		let dirty = false;
++		let applying = false;
++		let available = false;
++		let applyGeneration = 0;
+ 		const mode = E('select', { id: 'tr3600-fan-mode' }, [
+ 			E('option', { value: 'auto' }, _('Automatic thermal control')),
+ 			E('option', { value: 'manual' }, _('Manual speed'))
+@@ -50,16 +54,22 @@
+ 		const apply = E('button', {
+ 			class: 'cbi-button cbi-button-apply',
+ 			click: function() {
+-				apply.disabled = true;
+ 				const args = mode.value === 'manual' ?
+ 					[ 'set', 'manual', level.value ] : [ 'set', 'auto' ];
++				applying = true;
++				applyGeneration++;
++				updateControls();
+ 				exec(args).then(function() {
+-					ui.addNotification(null, E('p', _('Fan setting applied.')));
+ 					return self.load();
+-				}).then(update).catch(function(err) {
++				}).then(function(status) {
++					dirty = false;
++					applying = false;
++					update(status, true);
++					ui.addNotification(null, E('p', _('Fan setting applied.')));
++				}).catch(function(err) {
++					applying = false;
++					updateControls();
+ 					ui.addNotification(null, E('p', err.message || String(err)), 'error');
+-				}).finally(function() {
+-					apply.disabled = false;
+ 				});
+ 			}
+ 		}, _('Apply'));
+@@ -70,16 +80,23 @@
+ 			][Number(value)] || value;
+ 		}
+ 
+-		function update(status) {
+-			const available = status.available === '1';
++		function updateControls() {
++			mode.disabled = !available || applying;
++			level.disabled = !available || applying || mode.value !== 'manual';
++			apply.disabled = !available || applying;
++		}
++
++		function update(status, syncControls) {
++			available = status.available === '1';
+ 			const max = Math.max(0, Number(status.max_level || 3));
+ 			const current = Math.min(max, Math.max(0, Number(status.level || 0)));
+-			mode.value = status.mode === 'manual' ? 'manual' : 'auto';
+-			level.max = String(max);
+-			level.value = String(current);
+-			levelText.textContent = levelLabel(current);
+-			level.disabled = !available || mode.value !== 'manual';
+-			apply.disabled = !available;
++			if (syncControls) {
++				mode.value = status.mode === 'manual' ? 'manual' : 'auto';
++				level.max = String(max);
++				level.value = String(current);
++				levelText.textContent = levelLabel(current);
++			}
++			updateControls();
+ 			temperature.textContent = temperatureText(status.temp);
+ 			policy.textContent = status.policy || _('Unavailable');
+ 			availability.textContent = available ?
+@@ -88,14 +105,23 @@
+ 		}
+ 
+ 		mode.addEventListener('change', function() {
+-			level.disabled = mode.value !== 'manual';
++			dirty = true;
++			updateControls();
+ 		});
+ 		level.addEventListener('input', function() {
++			dirty = true;
+ 			levelText.textContent = levelLabel(level.value);
+ 		});
+ 
+-		update(initial);
+-		poll.add(function() { return self.load().then(update); }, 5);
++		update(initial, true);
++		poll.add(function() {
++			const generation = applyGeneration;
++			return self.load().then(function(status) {
++				if (generation !== applyGeneration)
++					return;
++				update(status, !dirty && !applying);
++			});
++		}, 5);
+ 
+ 		return E('div', { class: 'cbi-map' }, [
+ 			E('h2', {}, _('TR3600 Fan Control')),

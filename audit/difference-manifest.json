@@ -1,0 +1,76 @@
+{
+  "source_entries": 2926,
+  "candidate_entries": 2926,
+  "difference_count": 3,
+  "differences": [
+    {
+      "path": "etc/init.d/tr3600-fan",
+      "before": {
+        "type": "R",
+        "timestamp": 1786429759,
+        "mode": "644",
+        "uid": 0,
+        "gid": 0,
+        "size": 264,
+        "sparse": "0",
+        "sha256": "84214917f795b4da52efe7e3ecc54c83f982d0277492069edc7893bcc19f18aa"
+      },
+      "after": {
+        "type": "R",
+        "timestamp": 1786429759,
+        "mode": "755",
+        "uid": 0,
+        "gid": 0,
+        "size": 264,
+        "sparse": "0",
+        "sha256": "84214917f795b4da52efe7e3ecc54c83f982d0277492069edc7893bcc19f18aa"
+      }
+    },
+    {
+      "path": "usr/sbin/tr3600-fan",
+      "before": {
+        "type": "R",
+        "timestamp": 1786429759,
+        "mode": "644",
+        "uid": 0,
+        "gid": 0,
+        "size": 3447,
+        "sparse": "0",
+        "sha256": "cd843edc0990368656ee086e63d5d8172cb3179ad6fd9852600a258d6e0df862"
+      },
+      "after": {
+        "type": "R",
+        "timestamp": 1786429759,
+        "mode": "755",
+        "uid": 0,
+        "gid": 0,
+        "size": 3447,
+        "sparse": "0",
+        "sha256": "cd843edc0990368656ee086e63d5d8172cb3179ad6fd9852600a258d6e0df862"
+      }
+    },
+    {
+      "path": "www/luci-static/resources/view/tr3600-fan.js",
+      "before": {
+        "type": "R",
+        "timestamp": 1786429759,
+        "mode": "644",
+        "uid": 0,
+        "gid": 0,
+        "size": 3457,
+        "sparse": "0",
+        "sha256": "1e1633b5502a512143b61b6d55621815814af385c0df7ca59550b729de87088f"
+      },
+      "after": {
+        "type": "R",
+        "timestamp": 1786429759,
+        "mode": "644",
+        "uid": 0,
+        "gid": 0,
+        "size": 4709,
+        "sparse": "0",
+        "sha256": "52bcc95c8fdc42d6f86e560b8e6eb1af7c35f3947bbb43a0aac8d9dced577ee1"
+      }
+    }
+  ]
+}
