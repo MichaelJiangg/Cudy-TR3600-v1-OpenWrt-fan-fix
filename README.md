@@ -20,6 +20,11 @@
 
 联系作者：[小红书－小猫望远镜](https://www.xiaohongshu.com/user/profile/6956712700000000190372ea) 
 
+## 下载
+
+- [Cudy TR3600 v1 OpenWrt 风扇修复版 v2（Pre-release）](https://github.com/MichaelJiangg/Cudy-TR3600-v1-OpenWrt-fan-fix/releases/tag/tr3600-v1-fanfix-v2)
+- 固件 SHA256：`5e3d09de56ce568337e822d976a1e1af6b1924023b319a2d157e5b69f22c2a56`
+
 ## 本版修复
 
 1. 将风扇 PWM 从错误的 PWM1／`pwm1_0` 改为实机可用的 PWM0／`pwm0`。
