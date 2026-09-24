@@ -2,6 +2,13 @@ name: Build TR3600 v3 Android USB tethering
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-tr3600-android-usb.yml
+      - build/**
+      - patches/**
 
 permissions:
   contents: read
