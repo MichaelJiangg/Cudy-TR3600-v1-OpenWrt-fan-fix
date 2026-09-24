@@ -1,0 +1,139 @@
+name: Build TR3600 v3 Android USB tethering
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-tr3600-android-usb.yml
+      - build/**
+      - patches/**
+
+permissions:
+  contents: read
+
+env:
+  OPENWRT_REPO: https://github.com/soapmancn/openwrt.git
+  OPENWRT_COMMIT: 046aec0dccd90f5a156cb8e9725c121c81955dd3
+  CONTROLLER_REPO: https://github.com/liangcanming/Cudy-tr3600-v1-6.12.git
+  CONTROLLER_COMMIT: d696469c394c490fafe0660ba4581452b7fe41be
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 350
+
+    steps:
+      - name: Checkout patch repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space and install build dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/lib/jvm
+          sudo docker image prune --all --force
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile
+          sudo fallocate -l 8G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install -y \
+            build-essential libncurses5-dev gawk git subversion libssl-dev \
+            gettext unzip zlib1g-dev file python3 clang llvm dwarves flex \
+            bison dos2unix
+          sudo timedatectl set-timezone "$TZ"
+
+      - name: Fetch pinned sources
+        run: |
+          git init openwrt
+          git -C openwrt remote add origin "$OPENWRT_REPO"
+          git -C openwrt fetch --depth=1 origin "$OPENWRT_COMMIT"
+          git -C openwrt checkout --detach FETCH_HEAD
+          test "$(git -C openwrt rev-parse HEAD)" = "$OPENWRT_COMMIT"
+
+          git init controller
+          git -C controller remote add origin "$CONTROLLER_REPO"
+          git -C controller fetch --depth=1 origin "$CONTROLLER_COMMIT"
+          git -C controller checkout --detach FETCH_HEAD
+          test "$(git -C controller rev-parse HEAD)" = "$CONTROLLER_COMMIT"
+
+      - name: Prepare feeds and packages
+        run: |
+          cp controller/diy-iStore-part1.sh openwrt/
+          chmod +x openwrt/diy-iStore-part1.sh
+          cd openwrt
+          ./diy-iStore-part1.sh
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          cp ../controller/diy-iStore-part2.sh ./
+          chmod +x diy-iStore-part2.sh
+          ./diy-iStore-part2.sh
+
+      - name: Pin fan package and apply fixes
+        run: |
+          rm -rf openwrt/package/custom/luci-app-tr3600-fan
+          git init openwrt/package/custom/luci-app-tr3600-fan
+          git -C openwrt/package/custom/luci-app-tr3600-fan remote add origin \
+            https://github.com/liangcanming/luci-app-tr3600-fan.git
+          git -C openwrt/package/custom/luci-app-tr3600-fan fetch --depth=1 origin \
+            a13235ac8181525eee73c7850d33f188a9199ca0
+          git -C openwrt/package/custom/luci-app-tr3600-fan checkout --detach FETCH_HEAD
+
+          git -C openwrt apply "$GITHUB_WORKSPACE/patches/0001-tr3600-v1-use-pwm0.patch"
+          git -C openwrt/package/custom/luci-app-tr3600-fan apply \
+            "$GITHUB_WORKSPACE/patches/0002-tr3600-fan-scripts-executable.patch"
+          git -C openwrt/package/custom/luci-app-tr3600-fan apply \
+            "$GITHUB_WORKSPACE/patches/0003-luci-tr3600-fan-dirty-state.patch"
+
+      - name: Generate and verify build config
+        run: |
+          cp controller/mt7987-cudy-tr3600-iStore.config openwrt/.config
+          cat build/android-usb.config >> openwrt/.config
+          cd openwrt
+          make oldconfig
+          "$GITHUB_WORKSPACE/build/verify-usb-config.sh" .config
+          cp ../controller/diy-partX.sh ./
+          chmod +x diy-partX.sh
+          ./diy-partX.sh
+          "$GITHUB_WORKSPACE/build/verify-usb-config.sh" .config
+
+      - name: Download and compile
+        run: |
+          cd openwrt
+          make download -j8 || make download -j1 V=s
+          find dl -size -1024c -delete
+          make -j"$(nproc)" || make -j1 V=s
+
+      - name: Verify and collect artifacts
+        run: |
+          manifest=$(find openwrt/bin/targets/mediatek/filogic -maxdepth 1 \
+            -name 'openwrt-mediatek-filogic.manifest' -print -quit)
+          image=$(find openwrt/bin/targets/mediatek/filogic -maxdepth 1 \
+            -name '*cudy_tr3600-v1*squashfs-sysupgrade.bin' -print -quit)
+          test -n "$manifest"
+          test -n "$image"
+          build/verify-usb-manifest.sh "$manifest"
+
+          mkdir -p artifacts/kmods
+          cp "$image" artifacts/
+          cp "$manifest" artifacts/
+          find openwrt/bin/targets/mediatek/filogic -maxdepth 1 \
+            -name '*.sha256sums' -exec cp {} artifacts/ \;
+          find openwrt/bin -type f -name 'kmod-usb-net*.apk' \
+            -exec cp {} artifacts/kmods/ \;
+          sha256sum artifacts/*.bin > artifacts/TR3600-v3-android-usb.sha256
+          test -n "$(find artifacts/kmods -type f -name 'kmod-usb-net-rndis*.apk' -print -quit)"
+
+      - name: Upload private build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TR3600-v3-android-usb-${{ github.run_number }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 7

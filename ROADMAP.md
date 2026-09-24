@@ -2,7 +2,8 @@
 
 ## 当前阶段
 
-- v2 已作为 GitHub Pre-release 发布，等待最终实机验证。
+- v2 已作为 GitHub Pre-release 发布并完成实机启动与风扇检查。
+- v3 正在补充小米／Android USB 网络共享驱动，尚未生成可刷写固件。
 
 ## 已完成
 
@@ -16,13 +17,15 @@
 
 ## 进行中
 
-- 收集最终实机验证结果。
+- 固定 v3 构建来源并准备 Android USB 网络驱动配置。
+- 重新编译包含风扇修复和 USB 网络驱动的整套固件。
 
 ## 待办
 
-- 在 TR3600 v1 实机执行最终 `sysupgrade -T`。
-- 完成一次 `sysupgrade -n` 干净启动验证。
-- 验证自动温控、手动档位和重启后服务状态。
+- 验证 v3 构建产物包含 `kmod-usb-net-rndis`、`kmod-usb-net-cdc-ether` 和 `kmod-usb-net-cdc-ncm`。
+- 对 v3 固件执行 SHA256、设备元数据和 `sysupgrade -T` 检查。
+- 实机验证小米手机开启 USB 网络共享后生成网络接口并取得 DHCP 地址。
+- 验证自动温控、手动档位和重启后服务状态未回归。
 
 ## 最近验证
 
@@ -30,3 +33,4 @@
 - 根文件系统共 2926 项，只有 3 项预期差异。
 - LuCI dirty-state 行为测试通过。
 - GitHub Release 四个附件的大小与 SHA256 均已和本地文件核对一致。
+- v2 已在 TR3600 v1 上通过 `sysupgrade -T` 并正常启动；PWM0、温度读取与风扇冷却设备均已识别。
