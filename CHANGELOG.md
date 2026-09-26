@@ -1,5 +1,12 @@
 # 变更记录
 
+## v3（开发中）
+
+- 增加 Android USB 网络共享驱动构建输入。
+- 增加 USB Mass Storage、UAS、Ext4 和 KSMBD 轻量 NAS 构建输入。
+- 增加 `.config` 与固件 manifest 双重校验，缺少任一必需组件时终止构建。
+- 构建产物保留与固件内核 ABI 一致的 USB 网络、USB 存储、Ext4 和 KSMBD 内核模块。
+
 ## v2（2026-09-23）
 
 - 保留已经实机验证的 TR3600 v1 PWM0 内核修复。

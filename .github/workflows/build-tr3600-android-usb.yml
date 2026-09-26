@@ -1,4 +1,4 @@
-name: Build TR3600 v3 Android USB tethering
+name: Build TR3600 v3 Android USB tethering and NAS
 
 on:
   workflow_dispatch:
@@ -95,13 +95,16 @@ jobs:
         run: |
           cp controller/mt7987-cudy-tr3600-iStore.config openwrt/.config
           cat build/android-usb.config >> openwrt/.config
+          cat build/nas.config >> openwrt/.config
           cd openwrt
           make oldconfig
           "$GITHUB_WORKSPACE/build/verify-usb-config.sh" .config
+          "$GITHUB_WORKSPACE/build/verify-nas-config.sh" .config
           cp ../controller/diy-partX.sh ./
           chmod +x diy-partX.sh
           ./diy-partX.sh
           "$GITHUB_WORKSPACE/build/verify-usb-config.sh" .config
+          "$GITHUB_WORKSPACE/build/verify-nas-config.sh" .config
 
       - name: Download and compile
         run: |
@@ -119,6 +122,7 @@ jobs:
           test -n "$manifest"
           test -n "$image"
           build/verify-usb-manifest.sh "$manifest"
+          build/verify-nas-manifest.sh "$manifest"
 
           mkdir -p artifacts/kmods
           cp "$image" artifacts/
@@ -127,13 +131,20 @@ jobs:
             -name '*.sha256sums' -exec cp {} artifacts/ \;
           find openwrt/bin -type f -name 'kmod-usb-net*.apk' \
             -exec cp {} artifacts/kmods/ \;
-          sha256sum artifacts/*.bin > artifacts/TR3600-v3-android-usb.sha256
+          find openwrt/bin -type f \
+            \( -name 'kmod-usb-storage*.apk' -o -name 'kmod-fs-ext4*.apk' \
+               -o -name 'kmod-fs-ksmbd*.apk' \) \
+            -exec cp {} artifacts/kmods/ \;
+          sha256sum artifacts/*.bin > artifacts/TR3600-v3-usb-nas.sha256
           test -n "$(find artifacts/kmods -type f -name 'kmod-usb-net-rndis*.apk' -print -quit)"
+          test -n "$(find artifacts/kmods -type f -name 'kmod-usb-storage-uas*.apk' -print -quit)"
+          test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ext4*.apk' -print -quit)"
+          test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ksmbd*.apk' -print -quit)"
 
       - name: Upload private build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TR3600-v3-android-usb-${{ github.run_number }}
+          name: TR3600-v3-usb-nas-${{ github.run_number }}
           path: artifacts/
           if-no-files-found: error
           retention-days: 7

@@ -3,7 +3,7 @@
 ## 当前阶段
 
 - v2 已作为 GitHub Pre-release 发布并完成实机启动与风扇检查。
-- v3 正在补充小米／Android USB 网络共享驱动，尚未生成可刷写固件。
+- v3 正在补充小米／Android USB 网络共享驱动与轻量 USB NAS，尚未生成可刷写固件。
 
 ## 已完成
 
@@ -18,14 +18,17 @@
 ## 进行中
 
 - 固定 v3 构建来源并准备 Android USB 网络驱动配置。
-- 重新编译包含风扇修复和 USB 网络驱动的整套固件。
+- 增加 USB 存储、Ext4 与 KSMBD 构建配置及双重校验。
+- 重新编译包含风扇修复、USB 网络驱动和轻量 NAS 的整套固件。
 
 ## 待办
 
 - 验证 v3 构建产物包含 `kmod-usb-net-rndis`、`kmod-usb-net-cdc-ether` 和 `kmod-usb-net-cdc-ncm`。
+- 验证 v3 构建产物包含 USB Storage UAS、Ext4、KSMBD 服务及 LuCI 页面。
 - 对 v3 固件执行 SHA256、设备元数据和 `sysupgrade -T` 检查。
 - 实机验证小米手机开启 USB 网络共享后生成网络接口并取得 DHCP 地址。
 - 验证自动温控、手动档位和重启后服务状态未回归。
+- 实机验证 USB SSD 识别、Ext4 挂载和 SMB 读写。
 
 ## 最近验证
 
