@@ -1,0 +1,25 @@
+#!/bin/sh
+
+compatible_file=${TR3600_WAN_COMPATIBLE_FILE:-/proc/device-tree/compatible}
+net_class_dir=${TR3600_WAN_NET_CLASS_DIR:-/sys/class/net}
+
+[ -r "$compatible_file" ] || exit 0
+tr '\000' '\n' < "$compatible_file" | grep -qx 'cudy,tr3600-v1' || exit 0
+[ "$(uci -q get network.wan 2>/dev/null)" = 'interface' ] || exit 0
+[ "$(uci -q get network.wan.device 2>/dev/null)" = 'br-wan' ] || exit 0
+[ -e "$net_class_dir/eth0" ] || exit 0
+
+for section in $(uci -q show network 2>/dev/null | sed -n 's/^network\.\([^=]*\)=device$/\1/p'); do
+	[ "$(uci -q get "network.$section.name" 2>/dev/null)" = 'br-wan' ] && exit 0
+done
+
+logger -t tr3600-wan-compat 'Replacing stale br-wan reference with the TR3600 v1 default WAN device eth0'
+uci set network.wan.device='eth0'
+
+if [ "$(uci -q get network.wan6 2>/dev/null)" = 'interface' ] && \
+	[ "$(uci -q get network.wan6.device 2>/dev/null)" = 'br-wan' ]; then
+	uci set network.wan6.device='eth0'
+fi
+
+uci commit network
+exit 0
