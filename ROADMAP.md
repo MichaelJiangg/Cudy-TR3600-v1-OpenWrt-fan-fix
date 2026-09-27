@@ -40,3 +40,5 @@
 - v3 GitHub Actions 构建耗时 1 小时 18 分 48 秒，编译、清单验证和私有产物上传全部通过。
 - v3 固件文件为 `openwrt-mediatek-filogic-cudy_tr3600-v1-squashfs-sysupgrade.bin`，SHA256 为 `b9765daac67f345702ccacac803f19da200fe4a5943163eb7132a47ad15c2cb3`。
 - v3 清单确认包含风扇控制、RNDIS／CDC USB 网络、USB Storage UAS、Ext4、KSMBD 服务及 LuCI 中文界面。
+- v3 实机保留旧配置升级后发现 WAN 引用了不存在的 `br-wan`；手动恢复为 `eth0` 后 DHCP、默认路由与外网连接正常。
+- 已加入受限的 WAN 兼容迁移与五组回归场景，等待重新构建并验证迁移脚本进入固件根文件系统。

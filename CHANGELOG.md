@@ -6,6 +6,8 @@
 - 增加 USB Mass Storage、UAS、Ext4 和 KSMBD 轻量 NAS 构建输入。
 - 增加 `.config` 与固件 manifest 双重校验，缺少任一必需组件时终止构建。
 - 构建产物保留与固件内核 ABI 一致的 USB 网络、USB 存储、Ext4 和 KSMBD 内核模块。
+- 增加 TR3600 v1 首次启动 WAN 兼容迁移：仅在保留配置引用不存在的 `br-wan` 时回退到默认 WAN 设备 `eth0`。
+- 增加 WAN 迁移回归测试，并验证迁移脚本实际进入固件根文件系统。
 
 ## v2（2026-09-23）
 

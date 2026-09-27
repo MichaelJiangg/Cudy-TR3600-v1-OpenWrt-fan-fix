@@ -51,4 +51,15 @@ luci-i18n-ksmbd-zh-cn
 
 KSMBD 用于局域网 SMB 文件共享，不包含 Docker、Jellyfin、媒体转码或完整 NAS 系统。
 
+## WAN 升级兼容
+
+v3 构建会安装 `99-tr3600-wan-compat`。它只在以下条件全部满足时修复网络配置：
+
+1. 设备兼容标识为 `cudy,tr3600-v1`；
+2. 保留下来的 `network.wan.device` 指向 `br-wan`；
+3. UCI 中没有名为 `br-wan` 的有效 `device` 配置；
+4. TR3600 v1 默认 WAN 设备 `eth0` 存在。
+
+满足条件时，脚本将 WAN，以及同样指向 `br-wan` 的 WAN6，恢复为 `eth0`。已经正确使用 `eth0` 或明确配置了 `br-wan` 设备的系统不会被修改。
+
 构建产物必须同时保留对应内核 ABI 的 USB 网络、USB 存储、Ext4 和 KSMBD `kmod` 软件包，不得使用官方源或其他固件生成的内核模块替换。
