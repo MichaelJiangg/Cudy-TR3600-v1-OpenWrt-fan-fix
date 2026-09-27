@@ -135,13 +135,13 @@ jobs:
           root_member=$(tar -tf "$image" | sed -n '/\/root$/p' | head -n 1)
           test -n "$root_member"
           tar -xOf "$image" "$root_member" > /tmp/tr3600-root.squashfs
-          test -x openwrt/staging_dir/host/bin/unsquashfs
-          openwrt/staging_dir/host/bin/unsquashfs -cat \
+          test -x openwrt/staging_dir/host/bin/unsquashfs4
+          openwrt/staging_dir/host/bin/unsquashfs4 -cat \
             /tmp/tr3600-root.squashfs \
             etc/uci-defaults/99-tr3600-wan-compat \
             > /tmp/99-tr3600-wan-compat
           cmp build/files/99-tr3600-wan-compat /tmp/99-tr3600-wan-compat
-          openwrt/staging_dir/host/bin/unsquashfs -lln \
+          openwrt/staging_dir/host/bin/unsquashfs4 -lln \
             /tmp/tr3600-root.squashfs \
             etc/uci-defaults/99-tr3600-wan-compat \
             | grep -q '^-rwxr-xr-x '

@@ -45,3 +45,4 @@
 - 已加入受限的 WAN 兼容迁移与五组回归场景，等待重新构建并验证迁移脚本进入固件根文件系统。
 - 实机确认 `/dev/sda1` 为 NTFS；v3 未包含 NTFS3 或 FUSE，无法直接挂载且官方源没有匹配的内核模块。
 - AdBlock Fast 手动安装后成功生成 6.1 MiB 规则文件并拦截 228668 个域名，`google-analytics.com` 返回 `NXDOMAIN`。
+- v4 首次远端构建已完成全部编译，USB、NTFS3、KSMBD 和 AdBlock Fast manifest 校验通过；最终根文件系统校验因工具名应为 `unsquashfs4` 而失败，已修正并等待重跑。
