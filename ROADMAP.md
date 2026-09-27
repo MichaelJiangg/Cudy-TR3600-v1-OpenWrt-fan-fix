@@ -3,7 +3,8 @@
 ## 当前阶段
 
 - v2 已作为 GitHub Pre-release 发布并完成实机启动与风扇检查。
-- v3 已完成编译与本地静态验证，包含小米／Android USB 网络共享驱动及轻量 USB NAS，等待实机刷写验证。
+- v3 已完成编译、刷写与联网验证，包含小米／Android USB 网络共享驱动及轻量 USB NAS。
+- v4 正在加入 NTFS3、AdBlock Fast 和保留配置升级时的 WAN 兼容迁移。
 
 ## 已完成
 
@@ -17,18 +18,18 @@
 - 固定 v3 构建来源，加入 Android USB 网络、USB 存储、Ext4、KSMBD 及 LuCI 中文界面的构建配置和校验脚本。
 - GitHub Actions 运行 `36273338537` 成功生成 v3 可刷写固件，并通过构建配置与固件清单双重校验。
 - v3 固件 SHA256、`cudy_tr3600-v1` 目标板标识及 sysupgrade tar 结构已在本地核对通过。
+- v3 已在 TR3600 v1 实机完成 `sysupgrade -T`、刷写、启动与基本联网验证。
+- v4 已加入 NTFS3、AdBlock Fast、推荐规则处理工具和 WAN 兼容迁移的构建输入，并通过本地静态验证。
 
 ## 进行中
 
-- 在 TR3600 v1 上执行 `sysupgrade -T` 并刷写 v3 固件。
-- 实机验证 Android USB 网络共享、风扇控制和轻量 NAS。
+- 触发 GitHub Actions 重新编译 v4 固件。
 
 ## 待办
 
-- 在路由器上执行 v3 固件的 `sysupgrade -T` 检查。
 - 实机验证小米手机开启 USB 网络共享后生成网络接口并取得 DHCP 地址。
 - 验证自动温控、手动档位和重启后服务状态未回归。
-- 实机验证 USB SSD 识别、Ext4 挂载和 SMB 读写。
+- 实机配置 NTFS 硬盘挂载并验证 KSMBD 读写。
 
 ## 最近验证
 
@@ -42,3 +43,5 @@
 - v3 清单确认包含风扇控制、RNDIS／CDC USB 网络、USB Storage UAS、Ext4、KSMBD 服务及 LuCI 中文界面。
 - v3 实机保留旧配置升级后发现 WAN 引用了不存在的 `br-wan`；手动恢复为 `eth0` 后 DHCP、默认路由与外网连接正常。
 - 已加入受限的 WAN 兼容迁移与五组回归场景，等待重新构建并验证迁移脚本进入固件根文件系统。
+- 实机确认 `/dev/sda1` 为 NTFS；v3 未包含 NTFS3 或 FUSE，无法直接挂载且官方源没有匹配的内核模块。
+- AdBlock Fast 手动安装后成功生成 6.1 MiB 规则文件并拦截 228668 个域名，`google-analytics.com` 返回 `NXDOMAIN`。

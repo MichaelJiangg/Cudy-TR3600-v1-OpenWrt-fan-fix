@@ -1,6 +1,6 @@
-# v3 构建输入
+# v4 构建输入
 
-本目录用于在 v2 风扇修复基础上重新编译包含 Android USB 网络共享驱动和轻量 USB NAS 的 TR3600 v1 固件。
+本目录用于编译包含 Android USB 网络共享、NTFS／Ext4 轻量 USB NAS、AdBlock Fast 和升级兼容修复的 TR3600 v1 固件。
 
 ## 固定来源
 
@@ -19,9 +19,10 @@
 4. 将基础配置复制为 OpenWrt 的 `.config`。
 5. 把 `android-usb.config` 追加到 `.config`。
 6. 把 `nas.config` 追加到 `.config`。
-7. 执行 `make oldconfig`。
-8. 应用仓库 `patches/` 中的风扇修复。
-9. 编译固件和软件包。
+7. 把 `adblock.config` 追加到 `.config`。
+8. 执行 `make oldconfig`。
+9. 应用仓库 `patches/` 中的风扇修复。
+10. 编译固件和软件包。
 
 ## 必须验证
 
@@ -42,6 +43,7 @@ kmod-usb-net-rndis
 kmod-usb-storage
 kmod-usb-storage-uas
 kmod-fs-ext4
+kmod-fs-ntfs3
 e2fsprogs
 kmod-fs-ksmbd
 ksmbd-server
@@ -51,9 +53,22 @@ luci-i18n-ksmbd-zh-cn
 
 KSMBD 用于局域网 SMB 文件共享，不包含 Docker、Jellyfin、媒体转码或完整 NAS 系统。
 
+AdBlock Fast 必须同时包含：
+
+```text
+adblock-fast
+luci-app-adblock-fast
+gawk
+grep
+sed
+coreutils-sort
+```
+
+固件内置 AdBlock Fast 及其推荐处理工具，避免保留配置升级后只剩 UCI 配置、缺少服务程序和规则文件。
+
 ## WAN 升级兼容
 
-v3 构建会安装 `99-tr3600-wan-compat`。它只在以下条件全部满足时修复网络配置：
+v4 构建会安装 `99-tr3600-wan-compat`。它只在以下条件全部满足时修复网络配置：
 
 1. 设备兼容标识为 `cudy,tr3600-v1`；
 2. 保留下来的 `network.wan.device` 指向 `br-wan`；
@@ -62,4 +77,4 @@ v3 构建会安装 `99-tr3600-wan-compat`。它只在以下条件全部满足时
 
 满足条件时，脚本将 WAN，以及同样指向 `br-wan` 的 WAN6，恢复为 `eth0`。已经正确使用 `eth0` 或明确配置了 `br-wan` 设备的系统不会被修改。
 
-构建产物必须同时保留对应内核 ABI 的 USB 网络、USB 存储、Ext4 和 KSMBD `kmod` 软件包，不得使用官方源或其他固件生成的内核模块替换。
+构建产物必须同时保留对应内核 ABI 的 USB 网络、USB 存储、Ext4、NTFS3 和 KSMBD `kmod` 软件包，不得使用官方源或其他固件生成的内核模块替换。

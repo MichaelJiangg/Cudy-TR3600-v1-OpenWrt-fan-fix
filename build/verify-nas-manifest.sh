@@ -8,6 +8,7 @@ for package in \
 	kmod-usb-storage \
 	kmod-usb-storage-uas \
 	kmod-fs-ext4 \
+	kmod-fs-ntfs3 \
 	e2fsprogs \
 	kmod-fs-ksmbd \
 	ksmbd-server \

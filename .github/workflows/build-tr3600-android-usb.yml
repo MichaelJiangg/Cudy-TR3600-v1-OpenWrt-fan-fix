@@ -1,4 +1,4 @@
-name: Build TR3600 v3 Android USB tethering and NAS
+name: Build TR3600 v4 NTFS NAS and AdBlock Fast
 
 on:
   workflow_dispatch:
@@ -100,15 +100,18 @@ jobs:
           cp controller/mt7987-cudy-tr3600-iStore.config openwrt/.config
           cat build/android-usb.config >> openwrt/.config
           cat build/nas.config >> openwrt/.config
+          cat build/adblock.config >> openwrt/.config
           cd openwrt
           make oldconfig
           "$GITHUB_WORKSPACE/build/verify-usb-config.sh" .config
           "$GITHUB_WORKSPACE/build/verify-nas-config.sh" .config
+          "$GITHUB_WORKSPACE/build/verify-adblock-config.sh" .config
           cp ../controller/diy-partX.sh ./
           chmod +x diy-partX.sh
           ./diy-partX.sh
           "$GITHUB_WORKSPACE/build/verify-usb-config.sh" .config
           "$GITHUB_WORKSPACE/build/verify-nas-config.sh" .config
+          "$GITHUB_WORKSPACE/build/verify-adblock-config.sh" .config
 
       - name: Download and compile
         run: |
@@ -127,6 +130,7 @@ jobs:
           test -n "$image"
           build/verify-usb-manifest.sh "$manifest"
           build/verify-nas-manifest.sh "$manifest"
+          build/verify-adblock-manifest.sh "$manifest"
 
           root_member=$(tar -tf "$image" | sed -n '/\/root$/p' | head -n 1)
           test -n "$root_member"
@@ -151,18 +155,19 @@ jobs:
             -exec cp {} artifacts/kmods/ \;
           find openwrt/bin -type f \
             \( -name 'kmod-usb-storage*.apk' -o -name 'kmod-fs-ext4*.apk' \
-               -o -name 'kmod-fs-ksmbd*.apk' \) \
+               -o -name 'kmod-fs-ntfs3*.apk' -o -name 'kmod-fs-ksmbd*.apk' \) \
             -exec cp {} artifacts/kmods/ \;
-          sha256sum artifacts/*.bin > artifacts/TR3600-v3-usb-nas.sha256
+          sha256sum artifacts/*.bin > artifacts/TR3600-v4-ntfs-nas.sha256
           test -n "$(find artifacts/kmods -type f -name 'kmod-usb-net-rndis*.apk' -print -quit)"
           test -n "$(find artifacts/kmods -type f -name 'kmod-usb-storage-uas*.apk' -print -quit)"
           test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ext4*.apk' -print -quit)"
+          test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ntfs3*.apk' -print -quit)"
           test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ksmbd*.apk' -print -quit)"
 
       - name: Upload private build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TR3600-v3-usb-nas-${{ github.run_number }}
+          name: TR3600-v4-ntfs-nas-${{ github.run_number }}
           path: artifacts/
           if-no-files-found: error
           retention-days: 7

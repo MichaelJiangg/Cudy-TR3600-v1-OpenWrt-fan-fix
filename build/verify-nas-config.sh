@@ -8,6 +8,7 @@ for symbol in \
 	CONFIG_PACKAGE_kmod-usb-storage \
 	CONFIG_PACKAGE_kmod-usb-storage-uas \
 	CONFIG_PACKAGE_kmod-fs-ext4 \
+	CONFIG_PACKAGE_kmod-fs-ntfs3 \
 	CONFIG_PACKAGE_e2fsprogs \
 	CONFIG_PACKAGE_kmod-fs-ksmbd \
 	CONFIG_PACKAGE_ksmbd-server \
