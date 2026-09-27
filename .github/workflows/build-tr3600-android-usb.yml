@@ -126,8 +126,11 @@ jobs:
             -name 'openwrt-mediatek-filogic.manifest' -print -quit)
           image=$(find openwrt/bin/targets/mediatek/filogic -maxdepth 1 \
             -name '*cudy_tr3600-v1*squashfs-sysupgrade.bin' -print -quit)
+          upstream_checksums=$(find openwrt/bin/targets/mediatek/filogic -maxdepth 1 \
+            -name 'sha256sums' -print -quit)
           test -n "$manifest"
           test -n "$image"
+          test -s "$upstream_checksums"
           build/verify-usb-manifest.sh "$manifest"
           build/verify-nas-manifest.sh "$manifest"
           build/verify-adblock-manifest.sh "$manifest"
@@ -149,20 +152,29 @@ jobs:
           mkdir -p artifacts/kmods
           cp "$image" artifacts/
           cp "$manifest" artifacts/
-          find openwrt/bin/targets/mediatek/filogic -maxdepth 1 \
-            -name '*.sha256sums' -exec cp {} artifacts/ \;
+          cp "$upstream_checksums" artifacts/openwrt-sha256sums
           find openwrt/bin -type f -name 'kmod-usb-net*.apk' \
             -exec cp {} artifacts/kmods/ \;
           find openwrt/bin -type f \
             \( -name 'kmod-usb-storage*.apk' -o -name 'kmod-fs-ext4*.apk' \
                -o -name 'kmod-fs-ntfs3*.apk' -o -name 'kmod-fs-ksmbd*.apk' \) \
             -exec cp {} artifacts/kmods/ \;
-          sha256sum artifacts/*.bin > artifacts/TR3600-v4-ntfs-nas.sha256
-          test -n "$(find artifacts/kmods -type f -name 'kmod-usb-net-rndis*.apk' -print -quit)"
-          test -n "$(find artifacts/kmods -type f -name 'kmod-usb-storage-uas*.apk' -print -quit)"
-          test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ext4*.apk' -print -quit)"
-          test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ntfs3*.apk' -print -quit)"
-          test -n "$(find artifacts/kmods -type f -name 'kmod-fs-ksmbd*.apk' -print -quit)"
+          (cd artifacts && sha256sum *.bin > TR3600-v4-ntfs-nas.sha256)
+
+          require_kmod() {
+            package_file=$(find artifacts/kmods -type f -name "$1" -print -quit)
+            test -n "$package_file"
+            test -s "$package_file"
+          }
+          require_kmod 'kmod-usb-net-[0-9]*.apk'
+          require_kmod 'kmod-usb-net-cdc-ether-[0-9]*.apk'
+          require_kmod 'kmod-usb-net-cdc-ncm-[0-9]*.apk'
+          require_kmod 'kmod-usb-net-rndis-[0-9]*.apk'
+          require_kmod 'kmod-usb-storage-[0-9]*.apk'
+          require_kmod 'kmod-usb-storage-uas-[0-9]*.apk'
+          require_kmod 'kmod-fs-ext4-[0-9]*.apk'
+          require_kmod 'kmod-fs-ntfs3-[0-9]*.apk'
+          require_kmod 'kmod-fs-ksmbd-[0-9]*.apk'
 
       - name: Upload private build artifact
         uses: actions/upload-artifact@v4
